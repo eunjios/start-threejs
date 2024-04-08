@@ -47,8 +47,12 @@
 
       const scene = new THREE.Scene();
 
+      const light = new THREE.DirectionalLight(0xffffff, 3);
+      light.position.set(1, 1, 1).normalize();
+      scene.add(light);
+
       const geometry = new THREE.ConeGeometry(10, 20, 40);
-      const material = new THREE.MeshBasicMaterial({ color: 0x8d9ca4 });
+      const material = new THREE.MeshPhongMaterial({ color: 0x8d9ca4 });
       const cone = new THREE.Mesh(geometry, material);
 
       scene.add(cone);

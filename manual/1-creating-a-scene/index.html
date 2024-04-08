@@ -46,13 +46,21 @@
       /**
        * Geometry: 오브젝트
        *    BoxGeometry: 큐브 모양의 객체
-       *    MeshBasicMaterial: 색상 등 재질을 결정하는 객체
+       *    MeshStandardMaterial: 색상 등 재질을 결정하는 객체
        *    Mesh: scene 안에 add 할 수 있는 객체 (add 후 위치: (0, 0, 0))
        */
       const geometry = new THREE.BoxGeometry(2, 1, 1);
-      const material = new THREE.MeshBasicMaterial({ color: 0x7d844b });
+      const material = new THREE.MeshStandardMaterial({ color: 0x7d844b });
       const cube = new THREE.Mesh(geometry, material);
       scene.add(cube);
+
+      /**
+       * 빛 추가
+       *    DirectionalLight(색상, 강도)
+       */
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(10, 10, 10).normalize();
+      scene.add(light);
 
       camera.position.z = 5; // (0, 0, 5)
 
