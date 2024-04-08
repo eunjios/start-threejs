@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Interactive Cubes</title>
+    <style>
+      body {
+        background-color: #1a1a1a;
+        color: #efefef;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three/build/three.module.js';
+
+      let camera, scene, raycaster, renderer;
+
+      let INTERSECTED;
+      let theta = 0;
+
+      const axis = ['x', 'y', 'z'];
+      const pointer = new THREE.Vector2();
+      const radius = 5;
+
+      init();
+      animate();
+
+      function getRandomPosition() {
+        return Math.random() * 20 - 10;
+      }
+
+      function getRandomRotation() {
+        return Math.random() * 2 * Math.PI;
+      }
+
+      function getRandomScale() {
+        return Math.random() + 0.2;
+      }
+
+      function getCameraPosition(r, theta) {
+        return r * Math.sin(THREE.MathUtils.degToRad(theta));
+      }
+
+      function init() {
+        camera = new THREE.PerspectiveCamera(
+          70,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          100,
+        );
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x374254);
+
+        const light = new THREE.DirectionalLight(0xfff394, 3);
+        light.position.set(1, 1, 100).normalize();
+        scene.add(light);
+
+        const geometry = new THREE.CylinderGeometry();
+
+        for (let i = 0; i < 500; i++) {
+          const object = new THREE.Mesh(
+            geometry,
+            new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }),
+          );
+
+          for (const a of axis) {
+            object.position[a] = getRandomPosition();
+            object.rotation[a] = getRandomRotation();
+            object.scale[a] = getRandomScale();
+          }
+
+          scene.add(object);
+        }
+
+        raycaster = new THREE.Raycaster();
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('wheel', onDocumentMouseWheel, false);
+        window.addEventListener('resize', onWindowResize);
+      }
+
+      function onDocumentMouseWheel(event) {
+        camera.fov += event.deltaY * 0.05;
+        camera.fov = Math.max(30, Math.min(100, camera.fov));
+        camera.updateProjectionMatrix();
+      }
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      function onPointerMove(event) {
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        render();
+      }
+
+      function render() {
+        theta += 0.01;
+
+        for (const a of axis) {
+          camera.position[a] = getCameraPosition(radius, theta);
+        }
+
+        camera.lookAt(scene.position);
+        camera.updateMatrixWorld();
+
+        // 마우스 포인터 위치에 레이저 쏘기
+        raycaster.setFromCamera(pointer, camera);
+
+        // 레이저와 교차하는 모든 오브젝트 배열로 만들기
+        const intersects = raycaster.intersectObjects(scene.children, true);
+
+        if (intersects.length > 0) {
+          // 일치하는 오브젝트가 있다면 색상 변경
+          if (INTERSECTED !== intersects[0].object) {
+            if (INTERSECTED)
+              INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+
+            INTERSECTED = intersects[0].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.setHex(0xeb5e28);
+          }
+        } else {
+          // 일치하는 오브젝트가 없다면 이전 색으로 돌려놓기
+          if (INTERSECTED)
+            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+
+          INTERSECTED = null;
+        }
+        renderer.render(scene, camera);
+      }
+    </script>
+  </body>
+</html>
