@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Morph targets</title>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as THREE from 'three';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+      let container, camera, scene, renderer, mesh;
+
+      init();
+
+      function init() {
+        container = document.getElementById('container');
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111111);
+
+        camera = new THREE.PerspectiveCamera(
+          30,
+          window.innerWidth / window.innerHeight,
+          1,
+          20,
+        );
+        camera.position.x = 12;
+        camera.position.y = 8;
+        camera.position.z = 8;
+        scene.add(camera);
+
+        const light = new THREE.AmbientLight(0xffffff, 1.5);
+        scene.add(light);
+
+        const pointLight = new THREE.PointLight(0xffffff, 300);
+        camera.add(pointLight);
+
+        const geometry = new THREE.BoxGeometry(2, 2, 2, 32, 32, 32);
+
+        const material = new THREE.MeshPhongMaterial({
+          color: 0xd57b4e,
+          flatShading: true,
+        });
+
+        mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setAnimationLoop(function () {
+          renderer.render(scene, camera);
+        });
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = false;
+
+        window.addEventListener('resize', onWindowResize);
+      }
+
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    </script>
+  </body>
+</html>
